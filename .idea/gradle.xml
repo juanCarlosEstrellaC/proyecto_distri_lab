@@ -18,6 +18,7 @@
             <option value="$PROJECT_DIR$/ejemplo02-custom-rest" />
             <option value="$PROJECT_DIR$/ejemplo02-rest" />
             <option value="$PROJECT_DIR$/ejemplo03-custom-rest" />
+            <option value="$PROJECT_DIR$/ejemplo5JPA" />
           </set>
         </option>
       </GradleProjectSettings>

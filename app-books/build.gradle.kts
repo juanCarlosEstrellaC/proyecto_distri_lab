@@ -47,6 +47,8 @@ dependencies {
     implementation("io.smallrye.reactive:smallrye-mutiny-vertx-consul-client") // Mutiny para programación reactiva
 
 
+    // Quarkus Fault Tolerance
+    implementation("io.quarkus:quarkus-smallrye-fault-tolerance")
 
 }
 

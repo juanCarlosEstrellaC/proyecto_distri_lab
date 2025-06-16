@@ -13,6 +13,7 @@ import org.eclipse.microprofile.config.ConfigProvider;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Path("/authors")
 @Produces(MediaType.APPLICATION_JSON)
@@ -46,10 +47,23 @@ public class AuthorRest {
         return authorRepository.findAll().list();
     }
 
+    // Simulación de errores
+    AtomicInteger index = new AtomicInteger();
 
     @GET
     @Path("/find/{isbn}")
     public List<Author> findByBook(@PathParam("isbn") String isbn) {
+
+        // Simulación de errores para pruebas. De 5 intentos, 4 son falla y 1 éxito.
+        int valor = index.getAndIncrement();
+        if (valor % 5 != 0) {
+            String msg = String.format("Intento %d, generando error", valor);
+            System.out.println("Author ************************ " + msg);
+            throw new RuntimeException(msg);
+        }
+
+
+
         var ret = authorRepository.findByBook(isbn);
 
 /*         //Para agregar el puerto al nombre del autor, pero sobreescribe el nombre original de la DB.
