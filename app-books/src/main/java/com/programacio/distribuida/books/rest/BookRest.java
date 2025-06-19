@@ -5,6 +5,7 @@ import com.programacio.distribuida.books.db.Book;
 import com.programacio.distribuida.books.dtos.AuthorDto;
 import com.programacio.distribuida.books.dtos.BookDto;
 import com.programacio.distribuida.books.repo.BooksRepository;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.stork.Stork;
 import io.smallrye.stork.api.Service;
@@ -45,11 +46,11 @@ public class BookRest {
 
 
     // Metodo para buscar por ISBN con LISTA DE AUTORES.
-    @GET
+/*    @GET
     @Path("/{isbn}")
     public Response findByIsbn(@PathParam("isbn") String isbn) {
 
-    /*  var stork = Stork.getInstance();
+    *//*  var stork = Stork.getInstance();
 
         Map<String, Service> services = stork.getServices();
         services.entrySet().stream().forEach(it -> {
@@ -70,7 +71,7 @@ public class BookRest {
         Uni<ServiceInstance> instance = service.selectInstance();
         instance.subscribe().with(inst -> {
             System.out.println("Instancia seleccionada: " + inst.getId() + " - " + inst.getHost() + ":" + inst.getPort());
-        });*/
+        });*//*
 
 
         // 1. Buscar el Libro
@@ -85,7 +86,64 @@ public class BookRest {
 
         // 4. Devolver el DTO
         return Response.ok(bookDto).build();
+    }*/
+
+    @GET
+    @Path("/{isbn}")
+    public Response findByIsbn(@PathParam("isbn") String isbn) {
+        var stork = Stork.getInstance();
+
+        //--listar servicios
+        Map<String, Service> services = stork.getServices();
+
+        services.entrySet()
+                .stream()
+                .forEach(it -> {
+                    System.out.println(it.getKey());
+
+                    Multi<ServiceInstance> instances = it.getValue()
+                            .getInstances()
+                            .onItem()
+                            .transformToMulti(items -> Multi.createFrom().iterable(items));
+
+                    instances.subscribe()
+                            .with(item->{
+                                System.out.println("  " + item.getHost() + ":" + item.getPort());
+                            });
+                });
+
+        //--seleccionar una instancia
+        Service service = stork.getService("authors-api");
+        Uni<ServiceInstance> instance = service.selectInstance();
+        instance
+                .subscribe()
+                .with(inst -> {
+                    System.out.println("**Instancia seleccionada: " + inst.getHost() + ":" + inst.getPort());
+                });
+
+
+        BookDto ret = new BookDto();
+
+        //1. buscar el libro
+        var obj = booksRepository.findByIdOptional(isbn);
+        if (obj.isEmpty()) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .build();
+        }
+        mapper.map(obj.get(), ret);
+
+        var authors = client.findByBook(isbn)
+                .stream()
+                .map(AuthorDto::getName)
+                .toList();
+
+        ret.setAuthors(authors);
+
+        return Response.ok(ret)
+                .build();
     }
+
+
 
     @GET
     public List<BookDto> findAll() {
