@@ -1,10 +1,9 @@
-# Comando para construir la imagen:
-#docker build -t app-authors .
-#docker build -t jcestrella/app-authors .
-#docker push jcestrella/app-authors
+############################ Dockerfile para la aplicacion de Autores ##############################
+# Descarga una distribución de Linux ligera (Alpine) que ya trae el JRE de OpenJDK (Eclipse Temurin),
+# Luego copia los archivos build generados de en la aplicación al contenedor y la ejecuta con
+# java -jar app.jar.
 
 FROM eclipse-temurin:21.0.7_6-jre-alpine-3.21
-
 ENV LANGUAGE='en_US:en'
 
 # Se crea un directorio para la aplicacion
@@ -21,3 +20,18 @@ COPY build/quarkus-app/quarkus-run.jar app.jar
 
 CMD ["java", "-jar", "app.jar"]
 
+############################ Comandos para construir la imagen Docker ##############################
+#  1. Navegar al directorio donde se encuentra este Dockerfile.
+#  2. Ejecutar el comando:
+#       docker build -t app-authors . (el punto indica que se debe buscar el Dockerfile en el directorio actual)
+#
+#     O para subir a Docker Hub, usar:
+#       docker build -t jcestrella/app-authors . (colocar el punto al final para indicar el contexto de construcción)
+#
+#  3. Para subir la imagen a Docker Hub, usar:
+#       docker push jcestrella/app-authors
+#
+#  4. Para ejecutar el contenedor, usar:
+#       docker run -d -p 8080:8080 jcestrella/app-authors
+
+####################################################################################################

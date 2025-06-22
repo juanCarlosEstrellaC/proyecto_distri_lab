@@ -1,4 +1,6 @@
-#docker compose up
+########################### docker-compose.yml ###########################
+# Para correr este archivo:
+# docker compose up
 version: '3.3'
 
 services:
@@ -6,8 +8,8 @@ services:
     image: postgres:17.5-alpine3.22
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: distribuida
+      POSTGRES_PASSWORD: labcom,2015
+      POSTGRES_DB: postgres
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - "/run/desktop/mnt/host/c/db-distribuida:/var/lib/postgresql/data"
@@ -31,8 +33,8 @@ services:
     image: jcestrella/app-authors:latest
     environment:
       QUARKUS_DATASOURCE_USERNAME: postgres
-      QUARKUS_DATASOURCE_PASSWORD: postgres
-      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://dbserver:5432/distribuida
+      QUARKUS_DATASOURCE_PASSWORD: labcom,2015
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://dbserver:5432/postgres
       QUARKUS_HTTP_PORT: 8080
       CONSUL_HOST: consul
       CONSUL_PORT: 8500
