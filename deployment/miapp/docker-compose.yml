@@ -1,6 +1,9 @@
 ########################### docker-compose.yml ###########################
 # Para correr este archivo:
 # docker compose up
+#
+# Para correr en segundo plano:
+# docker compose up -d
 #version: '3.3'
 
 services:
@@ -17,6 +20,7 @@ services:
       - "54321:5432"
     expose:
       - 5432
+
   consul:
     image: consul:1.15.4
     command:
@@ -29,6 +33,23 @@ services:
     expose:
       - 8500
 
+  proxy:
+    image: traefik:3.4.1
+    command: |
+      --api.insecure=true
+      --api.dashboard=true
+      --providers.ConsulCatalog.exposedByDefault=false
+      --providers.consulCatalog.refreshInterval=5s
+      --providers.consulCatalog.endpoint.address=consul:8500
+    ports:
+      - "8888:8080" # Traefik dashboard
+      - "8080:80"   # HTTP, host:contenedor
+    expose:
+      - 80 # Exponer el puerto 80 del contenedor a la red interna de Docker.
+    depends_on:
+     - consul
+
+
   authors3:
     image: jcestrella/app-authors3:latest
     environment:
@@ -38,14 +59,42 @@ services:
       QUARKUS_HTTP_PORT: 8080
       CONSUL_HOST: consul
       CONSUL_PORT: 8500
-    ports:
-      - "8080:8080"
+    # Comento el mapeo ya que uso Traefik para usar el proxy inverso.
+    # http://127.0.0.1:8080/app-authors/authors
+    # ports:
+    #   - "9090:8080" # host:contenedor
+    expose:
+      - 8080 # Exponer el puerto 8080 del contenedor a la red interna de Docker.
+    deploy:
+      replicas: 4
     depends_on:
       - dbserver
       - consul
     entrypoint: >
       sh -c "
       apk add --no-cache curl bash &&
+      curl -o /usr/local/bin/wait-for-it https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh &&
+      chmod +x /usr/local/bin/wait-for-it &&
+      /usr/local/bin/wait-for-it dbserver:5432 -- java -jar /app/app.jar
+      "
+
+  books:
+    image: jcestrella/app-books:latest
+    environment:
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: labcom,2015
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://dbserver:5432/postgres
+      QUARKUS_HTTP_PORT: 8080
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+      #AUTHORS_URL: http://authors3:8080
+    ports:
+      - "9091:8080" # host:contenedor
+    depends_on:
+      - dbserver
+      - consul
+    entrypoint: >
+      sh -c "
       curl -o /usr/local/bin/wait-for-it https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh &&
       chmod +x /usr/local/bin/wait-for-it &&
       /usr/local/bin/wait-for-it dbserver:5432 -- java -jar /app/app.jar

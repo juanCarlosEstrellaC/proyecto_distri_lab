@@ -10,6 +10,9 @@ ENV LANGUAGE='en_US:en'
 RUN mkdir /app
 WORKDIR /app
 
+RUN apt update
+RUN apt install -y iputils-ping
+
 # Copiar los archivos de la aplicacion al contenedor
 # Se pone primero la capa de dependencias o lib para que se pueda reutilizar.
 COPY build/quarkus-app/lib/ ./lib
