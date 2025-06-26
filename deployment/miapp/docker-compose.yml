@@ -50,8 +50,8 @@ services:
      - consul
 
 
-  authors3:
-    image: jcestrella/app-authors3:latest
+  authors:
+    image: jcestrella/app-authors:latest
     environment:
       QUARKUS_DATASOURCE_USERNAME: postgres
       QUARKUS_DATASOURCE_PASSWORD: labcom,2015
