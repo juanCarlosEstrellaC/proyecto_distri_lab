@@ -20,6 +20,8 @@ services:
       - "54321:5432"
     expose:
       - 5432
+    networks:
+      - red-global
 
   consul:
     image: consul:1.15.4
@@ -32,6 +34,8 @@ services:
       - "8500:8500"
     expose:
       - 8500
+    networks:
+      - red-global
 
   proxy:
     image: traefik:3.4.1
@@ -48,6 +52,8 @@ services:
       - 80 # Exponer el puerto 80 del contenedor a la red interna de Docker.
     depends_on:
      - consul
+    networks:
+      - red-global
 
 
   authors:
@@ -77,6 +83,8 @@ services:
       chmod +x /usr/local/bin/wait-for-it &&
       /usr/local/bin/wait-for-it dbserver:5432 -- java -jar /app/app.jar
       "
+    networks:
+      - red-global
 
   books:
     image: jcestrella/app-books:latest
@@ -99,3 +107,9 @@ services:
       chmod +x /usr/local/bin/wait-for-it &&
       /usr/local/bin/wait-for-it dbserver:5432 -- java -jar /app/app.jar
       "
+    networks:
+      - red-global
+
+networks:
+  red-global:
+    external: true
