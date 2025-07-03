@@ -20,8 +20,17 @@ services:
       - "54321:5432"
     expose:
       - 5432
-    networks:
-      - red-global
+
+  # Exportador de métricas de PostgreSQL para Prometheus
+  postgresql-exporter:
+    image: prometheuscommunity/postgres-exporter
+    environment:
+        DATA_SOURCE_NAME: "dbserver:5432/postgres?sslmode=disable"
+        DATA_SOURCE_USER: "postgres"
+        DATA_SOURCE_PASSWORD: "labcom,2015"
+    expose:
+      - 9187 # Exponer el puerto 9187 del contenedor a la red interna de Docker.
+
 
   consul:
     image: consul:1.15.4
@@ -34,8 +43,7 @@ services:
       - "8500:8500"
     expose:
       - 8500
-    networks:
-      - red-global
+
 
   proxy:
     image: traefik:3.4.1
@@ -45,15 +53,18 @@ services:
       --providers.ConsulCatalog.exposedByDefault=false
       --providers.consulCatalog.refreshInterval=5s
       --providers.consulCatalog.endpoint.address=consul:8500
+      --entrypoints.metrics.address=:"8082"
+      --entrypoints.http.address=:"80"
+      --metrics.prometheus=true
+      --metrics.prometheus.entryPoint=metrics
     ports:
       - "8888:8080" # Traefik dashboard
       - "8080:80"   # HTTP, host:contenedor
+      - "8082:8082" # Metrics, host:contenedor
     expose:
       - 80 # Exponer el puerto 80 del contenedor a la red interna de Docker.
     depends_on:
      - consul
-    networks:
-      - red-global
 
 
   authors:
@@ -83,8 +94,7 @@ services:
       chmod +x /usr/local/bin/wait-for-it &&
       /usr/local/bin/wait-for-it dbserver:5432 -- java -jar /app/app.jar
       "
-    networks:
-      - red-global
+
 
   books:
     image: jcestrella/app-books:latest
@@ -96,8 +106,10 @@ services:
       CONSUL_HOST: consul
       CONSUL_PORT: 8500
       #AUTHORS_URL: http://authors3:8080
-    ports:
-      - "9091:8080" # host:contenedor
+    #ports:
+    #  - "9091:8080" # host:contenedor
+    expose:
+      - 8080 # Exponer el puerto 8080 del contenedor a la red interna de Docker.
     depends_on:
       - dbserver
       - consul
@@ -107,9 +119,33 @@ services:
       chmod +x /usr/local/bin/wait-for-it &&
       /usr/local/bin/wait-for-it dbserver:5432 -- java -jar /app/app.jar
       "
-    networks:
-      - red-global
 
-networks:
-  red-global:
-    external: true
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - "./configs:/etc/prometheus"
+    ports:
+      - "9090:9090"
+    expose:
+      - 9090
+
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    ports:
+      - "3000:3000"
+    expose:
+      - 3000
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+
+# Acceder a Grafana: http://localhost:3000
+# Acceder a Prometheus: http://localhost:9090
+# Acceder al dashboard de Traefik: http://localhost:8888
+# Acceder a Consul: http://localhost:8500
+# Acceder a la aplicación de autores: http://localhost:8080/app-authors/authors
+
+# Para prometheus, la URL es http://prometheus:9090
