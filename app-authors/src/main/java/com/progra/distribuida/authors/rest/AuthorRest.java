@@ -33,12 +33,10 @@ public class AuthorRest {
     @Path("/{id}")
     public Response findById(@PathParam("id") Integer id) {
         var obj = authorRepository.findByIdOptional(id);
-
-        if (obj.isEmpty()) {
+        if (obj.isEmpty())  {
             // Si no se encuentra el autor, se devuelve un error 404
             return Response.status(Response.Status.NOT_FOUND).build();
         }
-
         return Response.ok(obj.get()).build();
     }
 
