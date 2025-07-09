@@ -68,7 +68,8 @@ services:
 
 
   authors:
-    image: jcestrella/app-authors:latest
+    #image: jcestrella/app-authors:latest
+    image: jcestrella/app-authors:version_health
     environment:
       QUARKUS_DATASOURCE_USERNAME: postgres
       QUARKUS_DATASOURCE_PASSWORD: labcom,2015
@@ -83,7 +84,7 @@ services:
     expose:
       - 8080 # Exponer el puerto 8080 del contenedor a la red interna de Docker.
     deploy:
-      replicas: 4
+      replicas: 2
     depends_on:
       - dbserver
       - consul
@@ -97,7 +98,8 @@ services:
 
 
   books:
-    image: jcestrella/app-books:latest
+    #image: jcestrella/app-books:latest
+    image: jcestrella/app-books:version_health
     environment:
       QUARKUS_DATASOURCE_USERNAME: postgres
       QUARKUS_DATASOURCE_PASSWORD: labcom,2015
@@ -147,5 +149,6 @@ services:
 # Acceder al dashboard de Traefik: http://localhost:8888
 # Acceder a Consul: http://localhost:8500
 # Acceder a la aplicación de autores: http://localhost:8080/app-authors/authors
+# devui: http://localhost:8080/q/dev-ui/extensions
 
 # Para prometheus, la URL es http://prometheus:9090
