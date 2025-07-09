@@ -17,7 +17,7 @@ services:
     volumes:
       - "/run/desktop/mnt/host/c/db-distribuida:/var/lib/postgresql/data"
     ports:
-      - "54321:5432"
+      - "5432:5432"
     expose:
       - 5432
 
@@ -148,7 +148,15 @@ services:
 # Acceder a Prometheus: http://localhost:9090
 # Acceder al dashboard de Traefik: http://localhost:8888
 # Acceder a Consul: http://localhost:8500
+
+# Authors:
 # Acceder a la aplicación de autores: http://localhost:8080/app-authors/authors
+# Salud autores:                      http://localhost:8080/app-authors/q/health
+
+# Books:
+# Acceder a la aplicación de libros: http://localhost:8080/app-books/books
+# Salud libros:                      http://localhost:8080/app-books/q/health
+
 # devui: http://localhost:8080/q/dev-ui/extensions
 
 # Para prometheus, la URL es http://prometheus:9090
