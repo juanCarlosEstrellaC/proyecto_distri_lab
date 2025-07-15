@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Microservicio Frontend</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { padding: 2rem; }
+        .tab-content { margin-top: 2rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="mb-4">Microservicio Frontend</h1>
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="authors-tab" data-bs-toggle="tab" data-bs-target="#authors" type="button" role="tab">Autores</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="books-tab" data-bs-toggle="tab" data-bs-target="#books" type="button" role="tab">Libros</button>
+        </li>
+        <!--
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="customers-tab" data-bs-toggle="tab" data-bs-target="#customers" type="button" role="tab">Clientes</button>
+        </li>
+        -->
+    </ul>
+    <div class="tab-content" id="myTabContent">
+        <!-- Autores -->
+        <div class="tab-pane fade show active" id="authors" role="tabpanel">
+            <form class="row g-2 mb-3" method="get" action="/author">
+                <div class="col-auto">
+                    <input type="number" name="id" class="form-control" placeholder="Buscar por ID">
+                </div>
+                <div class="col-auto">
+                    <input type="text" name="isbn" class="form-control" placeholder="Buscar por ISBN de libro">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                </div>
+            </form>
+            <!-- Resultado filtrado -->
+            <div th:if="${filteredAuthors != null}">
+                <h5>Resultado de la búsqueda</h5>
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Versión</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="author : ${filteredAuthors}">
+                        <td th:text="${author.id}"></td>
+                        <td th:text="${author.name}"></td>
+                        <td th:text="${author.version}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Lista completa -->
+            <h5 class="mt-4">Todos los autores</h5>
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Versión</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="author : ${allAuthors}">
+                    <td th:text="${author.id}"></td>
+                    <td th:text="${author.name}"></td>
+                    <td th:text="${author.version}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- Libros -->
+        <div class="tab-pane fade" id="books" role="tabpanel">
+            <form class="row g-2 mb-3" method="get" action="/book">
+                <div class="col-auto">
+                    <input type="text" name="isbn" class="form-control" placeholder="Buscar por ISBN">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                </div>
+            </form>
+            <!-- Resultado filtrado -->
+            <div th:if="${filteredBooks != null}">
+                <h5>Resultado de la búsqueda</h5>
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>ISBN</th>
+                        <th>Título</th>
+                        <th>Precio</th>
+                        <th>Autores</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="book : ${filteredBooks}">
+                        <td th:text="${book.isbn}"></td>
+                        <td th:text="${book.title}"></td>
+                        <td th:text="${book.price}"></td>
+                        <td th:text="${book.authors}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- Lista completa -->
+            <h5 class="mt-4">Todos los libros</h5>
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>ISBN</th>
+                    <th>Título</th>
+                    <th>Precio</th>
+                    <th>Autores</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="book : ${allBooks}">
+                    <td th:text="${book.isbn}"></td>
+                    <td th:text="${book.title}"></td>
+                    <td th:text="${book.price}"></td>
+                    <td th:text="${book.authors}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <!-- Clientes -->
+        <!--
+        <div class="tab-pane fade" id="customers" role="tabpanel">
+            <form class="row g-2 mb-3" method="get" action="/customer">
+                <div class="col-auto">
+                    <input type="number" name="id" class="form-control" placeholder="Buscar por ID de cliente">
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                </div>
+            </form>
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Órdenes</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="customer : ${customers}">
+                    <td th:text="${customer.id}"></td>
+                    <td th:text="${customer.name}"></td>
+                    <td th:text="${customer.email}"></td>
+                    <td>
+                        <ul>
+                            <li th:each="order : ${customer.orders}" th:text="${order}"></li>
+                        </ul>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        -->
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Guardar la pestaña active en localStorage al cambiar
+const tabElList = document.querySelectorAll('button[data-bs-toggle="tab"]');
+tabElList.forEach(function(tabEl) {
+    tabEl.addEventListener('shown.bs.tab', function (event) {
+        localStorage.setItem('activeTab', event.target.id);
+    });
+});
+// Al cargar la página, activar la pestaña guardada
+window.addEventListener('DOMContentLoaded', function() {
+    const activeTab = localStorage.getItem('activeTab');
+    if (activeTab) {
+        const tab = document.getElementById(activeTab);
+        if (tab) {
+            new bootstrap.Tab(tab).show();
+        }
+    }
+});
+</script>
+</body>
+</html>

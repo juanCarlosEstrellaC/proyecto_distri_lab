@@ -54,8 +54,8 @@ public class BookLifecycle {
 
         // Configurar las opciones de verificación del servicio
         var checkOptions = new CheckOptions()
-                //.setHttp("http://127.0.0.1:9090/ping")
-                .setHttp(String.format("http://%s:%s/ping", ipAddress.getHostAddress(), appPort))
+                .setHttp("http://127.0.0.1:9090/ping")
+                //.setHttp(String.format("http://%s:%s/ping", ipAddress.getHostAddress(), appPort))
                 .setInterval("10s")
                 .setDeregisterAfter("20s");
 
@@ -66,7 +66,7 @@ public class BookLifecycle {
                 .setAddress("127.0.0.1")
                 .setTags(tags)
                 .setCheckOptions(checkOptions)
-                .setAddress(ipAddress.getHostAddress())
+                //.setAddress(ipAddress.getHostAddress())
                 .setPort(appPort);
 
         consulClient.registerServiceAndAwait(serviceOptions);

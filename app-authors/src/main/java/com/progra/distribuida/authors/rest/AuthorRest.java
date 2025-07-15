@@ -53,12 +53,12 @@ public class AuthorRest {
     public List<Author> findByBook(@PathParam("isbn") String isbn) {
 
         // Simulación de errores para pruebas. De 5 intentos, 4 son falla y 1 éxito.
-        int valor = index.getAndIncrement();
+/*        int valor = index.getAndIncrement();
         if (valor % 5 != 0) {
             String msg = String.format("Intento %d, generando error", valor);
             System.out.println("Author ************************ " + msg);
             throw new RuntimeException(msg);
-        }
+        }*/
 
 
 
