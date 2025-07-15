@@ -10,7 +10,9 @@ scrape_configs:
 
   - job_name: 'prometheus'
     static_configs:
-      - targets: ['localhost:9090']
+      #- targets: ['localhost:9090']
+        - targets: ['prometheus:9090'] # TODO: Cambie localhost por el nombre del servicio en Docker Compose
+
 
   - job_name: 'proxy'
     metrics_path: '/metrics'

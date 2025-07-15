@@ -1,3 +1,7 @@
+# minikube start
+# minikube dashboard
+# kubectl apply -f app-authors-deployment.yml
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
