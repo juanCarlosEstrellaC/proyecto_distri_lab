@@ -1,0 +1,139 @@
+### ============================================
+### API Testing para app-authors-spring
+### ============================================
+### Nota: Asegúrate de que el servidor esté corriendo en el puerto 8080
+### Para ejecutar: Ctrl+Alt+R en cada petición
+
+### Variables
+@baseUrl = http://localhost:8080
+@contentType = application/json
+
+### ============================================
+### 1. PING - Verificar que la aplicación esté funcionando
+### ============================================
+GET {{baseUrl}}/ping
+Accept: {{contentType}}
+
+### ============================================
+### 2. GET TODOS LOS AUTORES (Verificar datos iniciales)
+### ============================================
+GET {{baseUrl}}/authors
+Accept: {{contentType}}
+
+### ============================================
+### 3. GET AUTOR POR ID (ID existente)
+### ============================================
+GET {{baseUrl}}/authors/1
+Accept: {{contentType}}
+
+### ============================================
+### 4. GET AUTOR POR ID (ID no existente)
+### ============================================
+GET {{baseUrl}}/authors/999
+Accept: {{contentType}}
+
+### ============================================
+### 5. GET AUTORES POR ISBN DE LIBRO
+### ============================================
+GET {{baseUrl}}/authors/find/100
+Accept: {{contentType}}
+
+### ============================================
+### 6. POST - CREAR NUEVO AUTOR
+### ============================================
+POST {{baseUrl}}/authors
+Content-Type: {{contentType}}
+
+{
+  "name": "Mario Vargas Llosa",
+  "version": 1
+}
+
+### ============================================
+### 7. POST - CREAR OTRO AUTOR
+### ============================================
+POST {{baseUrl}}/authors
+Content-Type: {{contentType}}
+
+{
+  "name": "Octavio Paz",
+  "version": 1
+}
+
+### ============================================
+### 8. PUT - ACTUALIZAR AUTOR EXISTENTE
+### ============================================
+PUT {{baseUrl}}/authors/1
+Content-Type: {{contentType}}
+
+{
+  "name": "Gabriel García Márquez (Actualizado)",
+  "version": 2
+}
+
+### ============================================
+### 9. PUT - ACTUALIZAR AUTOR NO EXISTENTE
+### ============================================
+PUT {{baseUrl}}/authors/999
+Content-Type: {{contentType}}
+
+{
+  "name": "Autor Inexistente",
+  "version": 1
+}
+
+### ============================================
+### 10. DELETE - ELIMINAR AUTOR EXISTENTE
+### ============================================
+DELETE {{baseUrl}}/authors/3
+Accept: {{contentType}}
+
+### ============================================
+### 11. DELETE - ELIMINAR AUTOR NO EXISTENTE
+### ============================================
+DELETE {{baseUrl}}/authors/999
+Accept: {{contentType}}
+
+### ============================================
+### 12. VERIFICAR AUTORES DESPUÉS DE CAMBIOS
+### ============================================
+GET {{baseUrl}}/authors
+Accept: {{contentType}}
+
+### ============================================
+### Pruebas adicionales con datos inválidos
+### ============================================
+
+### POST con datos inválidos (sin nombre)
+POST {{baseUrl}}/authors
+Content-Type: {{contentType}}
+
+{
+  "version": 1
+}
+
+### POST con nombre vacío
+POST {{baseUrl}}/authors
+Content-Type: {{contentType}}
+
+{
+  "name": "",
+  "version": 1
+}
+
+### POST con nombre solo espacios
+POST {{baseUrl}}/authors
+Content-Type: {{contentType}}
+
+{
+  "name": "   ",
+  "version": 1
+}
+
+### POST sin version (debería asignar version 1 automáticamente)
+POST {{baseUrl}}/authors
+Content-Type: {{contentType}}
+
+{
+  "name": "Autor Sin Version"
+}

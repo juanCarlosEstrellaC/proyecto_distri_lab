@@ -1,0 +1,58 @@
+################ Despliegue de la aplicación app-customers en Minikube ################
+# minikube start
+# minikube dashboard
+# Crea o actualiza recursos:  kubectl apply -f app-customers-deployment.yml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-customers
+  labels:
+    app: app-customers
+spec:
+  replicas: 2
+  selector:
+      matchLabels:
+        app: app-customers
+  template:
+    metadata:
+      labels:
+        app: app-customers
+    spec:
+      containers:
+        - name: app-customers
+          image: jcestrella/app-customers:latest
+          env:
+            - name: QUARKUS_DATASOURCE_USERNAME
+              value: postgres
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              value: labcom,2015
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              value: jdbc:postgresql://dbserver:5432/postgres
+            - name: QUARKUS_HTTP_PORT
+              value: "8080"
+            - name: CONSUL_HOST
+              value: consul
+            - name: CONSUL_PORT
+              value: "8500"
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+---
+# Service para la aplicación app-customers
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-customers-service
+spec:
+  type: ClusterIP
+  selector:
+    app: app-customers
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+

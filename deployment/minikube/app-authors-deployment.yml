@@ -1,6 +1,7 @@
+################ Despliegue de la aplicación app-authors en Minikube ################
 # minikube start
 # minikube dashboard
-# kubectl apply -f app-authors-deployment.yml
+# Crea o actualiza recursos:  kubectl apply -f app-authors-deployment.yml
 
 apiVersion: apps/v1
 kind: Deployment
@@ -20,7 +21,7 @@ spec:
     spec:
       containers:
         - name: app-authors
-          image: jcestrella/app-authors:latest
+          image: jcestrella/app-authors:version_health
           env:
             - name: QUARKUS_DATASOURCE_USERNAME
               value: postgres
@@ -40,11 +41,53 @@ spec:
             requests:
               memory: "512Mi"
               cpu: "500m"
-          # command:
-          # - sh
-          # - -c
-          # - |
-          #   apk add --no-cache curl bash &&
-          #   curl -o /usr/local/bin/wait-for-it https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh &&
-          #   chmod +x /usr/local/bin/wait-for-it &&
-          #   /usr/local/bin/wait-for-it dbserver:5432 -- java -jar /app/app.jar
+          command:
+            - sh
+            - -c
+            - |
+              apk add --no-cache curl bash &&
+              curl -o /usr/local/bin/wait-for-it https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh &&
+              chmod +x /usr/local/bin/wait-for-it &&
+              /usr/local/bin/wait-for-it dbserver:5432 -- java -jar /app/app.jar
+
+---
+# Service para la aplicación app-authors: le dará acceso a la aplicación desde el exterior. Balanceará el tráfico entre los pods de la aplicación.
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-authors-service
+spec:
+  type: ClusterIP # para tener una unica IP dentro del cluster
+  selector: # A donde se dirige el trafico
+    app: app-authors
+  ports:
+    - protocol: TCP
+      port: 8080 # Puerto del servicio, i.e., el puerto que se expone dentro del cluster
+      targetPort: 8080 # Puerto del contenedor
+
+---
+# Horizontal Pod Autoscaler para la aplicación app-authors: ajusta el número de réplicas de la aplicación según la carga.
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: app-authors-hpa
+spec:
+    scaleTargetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: app-authors
+    minReplicas: 1
+    maxReplicas: 10
+    metrics:
+        - type: Resource
+          resource:
+              name: cpu
+              target:
+                type: Utilization
+                averageUtilization: 50
+        - type: Resource
+          resource:
+            name: memory
+            target:
+              type: Utilization
+              averageUtilization: 50
