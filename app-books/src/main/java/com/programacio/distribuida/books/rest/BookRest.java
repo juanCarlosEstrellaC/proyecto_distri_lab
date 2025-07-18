@@ -45,49 +45,6 @@ public class BookRest {
     AuthorRestClient client;
 
 
-    // Metodo para buscar por ISBN con LISTA DE AUTORES.
-/*    @GET
-    @Path("/{isbn}")
-    public Response findByIsbn(@PathParam("isbn") String isbn) {
-
-    *//*  var stork = Stork.getInstance();
-
-        Map<String, Service> services = stork.getServices();
-        services.entrySet().stream().forEach(it -> {
-            var ser = it.getValue();
-            ser.getInstances().subscribe().with(ls -> {
-                ls.forEach(inst -> {
-                   System.out.println("Instancia: " + inst.getId() + " - " + inst.getHost() + ":" + inst.getPort());
-                });
-            });
-        });
-
-
-        //Obtener una instancia (microservicio) del servicio "authors-api" registrada en Stork.
-        //Esto devuelve una instancia disponible del servicio, por ejemplo, un microservicio de autores en el puerto 8080 o 8081.
-        //Uni es una clase de Mutiny que representa un valor único que puede ser emitido en el futuro (una promesa).
-
-        Service service = stork.getService("authors-api");
-        Uni<ServiceInstance> instance = service.selectInstance();
-        instance.subscribe().with(inst -> {
-            System.out.println("Instancia seleccionada: " + inst.getId() + " - " + inst.getHost() + ":" + inst.getPort());
-        });*//*
-
-
-        // 1. Buscar el Libro
-        var obj = booksRepository.findByID(isbn);
-        if (obj.isEmpty()) {
-            return Response.status(Response.Status.NOT_FOUND).build();
-        }
-
-        // 2. Crear el DTO para devolver el libro con los autores
-        var book = obj.get();
-        BookDto bookDto = generarBookDto(book);
-
-        // 4. Devolver el DTO
-        return Response.ok(bookDto).build();
-    }*/
-
     @GET
     @Path("/{isbn}")
     public Response findByIsbn(@PathParam("isbn") String isbn) {
@@ -160,47 +117,6 @@ public class BookRest {
         }).toList();
     }
 
-     /*
-    /*
-    Metodo para buscar todos los libros. Si el parámetro incluye=autores está presente, devuelve los libros con la lista de autores.
-    Endpoint para obtener todos los libros: GET http://localhost:9090/books
-    Endpoint para obtener todos los libros incluyendo autores: GET http://localhost:9090/books?incluye=autores
-    /*
-    @GET
-    public Response findAll(@QueryParam("incluye") String incluye) {
-        if ("autores".equals(incluye)) {
-            // 1. Buscar todos los libros
-            var listaLibros = booksRepository.listAll();
-            if (listaLibros.isEmpty()) {
-                return Response.status(Response.Status.NOT_FOUND).build();
-            }
-
-            List<BookDto> listaLibrosDto = new ArrayList<>();
-
-            // 2. Crear el DTO para devolver los libros con los autores
-            for (Book libro : listaLibros) {
-                BookDto bookDto = generarBookDto(libro);
-
-                // Agregar el libro DTO a la lista de libros DTO
-                listaLibrosDto.add(bookDto);
-            }
-
-
-            // 4. Devolver el DTO
-            return Response.ok(listaLibrosDto).build();
-
-        } else {
-            // 1. Buscar todos los libros
-            var listaLibros = booksRepository.listAll();
-            if (listaLibros.isEmpty()) {
-                return Response.status(Response.Status.NOT_FOUND).build();
-            }
-
-            // 2. Devolver la lista de libros
-            return Response.ok(listaLibros).build();
-        }
-
-    }*/
 
     private BookDto generarBookDto(Book libro) {
         BookDto bookDto = new BookDto();
@@ -218,25 +134,85 @@ public class BookRest {
         var miListadeAutores = client.findByBook(libro.getIsbn()).stream().map(AuthorDto::getName).toList();
         bookDto.setAuthors(miListadeAutores);
 
-/*        // 3. Buscar los autores un servicio REST de otro microservicio
-        var client = ClientBuilder.newClient();         // Crea una instancia de cliente HTTP usando ClientBuilder.newClient()
-
-        // 3.1. Obtener la lista de autores. Llamar al servicio REST de autores y los devuelve como un array de AuthorDto
-        AuthorDto[] listaAutores = client.target("") // URL del servicio REST de autores
-                .path("/authors/find/{isbn}")
-                .resolveTemplate("isbn", libro.getIsbn())
-                .request(MediaType.APPLICATION_JSON)
-                .get(AuthorDto[].class);
-
-        // 3.2. Agregar la lista de Strings que seria solo los nombres de los autores al DTO.
-        bookDto.setAuthors(Stream.of(listaAutores)
-                .map(AuthorDto::getName)
-                .toList()
-        );*/
         return bookDto;
     }
 
+    @POST
+    public Response create(Book book) {
+        try {
+            // Validar que el libro tenga ISBN y título
+            if (book.getIsbn() == null || book.getIsbn().trim().isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("El ISBN del libro es requerido y no puede estar vacío")
+                    .build();
+            }
+            
+            if (book.getTitle() == null || book.getTitle().trim().isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("El título del libro es requerido y no puede estar vacío")
+                    .build();
+            }
+            
+            // Verificar que el ISBN no exista ya
+            var existing = booksRepository.findByIdOptional(book.getIsbn());
+            if (existing.isPresent()) {
+                return Response.status(Response.Status.CONFLICT)
+                    .entity("Ya existe un libro con este ISBN")
+                    .build();
+            }
+            
+            // Si version es null, establecerla en 1
+            if (book.getVersion() == null) {
+                book.setVersion(1);
+            }
+            
+            booksRepository.persist(book);
+            return Response.status(Response.Status.CREATED).entity(book).build();
+        } catch (Exception e) {
+            e.printStackTrace(); // Para debugging
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PUT
+    @Path("/{isbn}")
+    public Response update(@PathParam("isbn") String isbn, Book book) {
+        try {
+            var obj = booksRepository.findByIdOptional(isbn);
+            if (obj.isEmpty()) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+            
+            // Validar que el libro tenga título
+            if (book.getTitle() == null || book.getTitle().trim().isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("El título del libro es requerido y no puede estar vacío")
+                    .build();
+            }
+            
+            booksRepository.update(isbn, book);
+            return Response.ok(obj.get()).build();
+        } catch (Exception e) {
+            e.printStackTrace(); // Para debugging
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DELETE
+    @Path("/{isbn}")
+    public Response delete(@PathParam("isbn") String isbn) {
+        try {
+            var obj = booksRepository.findByIdOptional(isbn);
+            if (obj.isEmpty()) {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+            
+            booksRepository.deleteById(isbn);
+            return Response.ok(obj.get()).build();
+        } catch (Exception e) {
+            e.printStackTrace(); // Para debugging
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }
-
-
-

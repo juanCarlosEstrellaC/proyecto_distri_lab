@@ -1,10 +1,6 @@
 ########################### docker-compose.yml ###########################
-# Para correr este archivo:
-# docker compose up
-#
-# Para correr en segundo plano:
-# docker compose up -d
-#version: '3.3'
+
+#       docker compose up -d
 
 services:
   dbserver:
@@ -68,8 +64,7 @@ services:
 
 
   authors:
-    #image: jcestrella/app-authors:latest
-    image: jcestrella/app-authors:version_health
+    image: jcestrella/app-authors:latest
     environment:
       QUARKUS_DATASOURCE_USERNAME: postgres
       QUARKUS_DATASOURCE_PASSWORD: labcom,2015
@@ -84,7 +79,7 @@ services:
     expose:
       - 8080 # Exponer el puerto 8080 del contenedor a la red interna de Docker.
     deploy:
-      replicas: 2
+      replicas: 1
     depends_on:
       - dbserver
       - consul
@@ -98,8 +93,7 @@ services:
 
 
   books:
-    #image: jcestrella/app-books:latest
-    image: jcestrella/app-books:version_health
+    image: jcestrella/app-books:latest
     environment:
       QUARKUS_DATASOURCE_USERNAME: postgres
       QUARKUS_DATASOURCE_PASSWORD: labcom,2015
@@ -122,6 +116,31 @@ services:
       /usr/local/bin/wait-for-it dbserver:5432 -- java -jar /app/app.jar
       "
 
+  customers:
+    image: jcestrella/app-customers:latest
+    environment:
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: labcom,2015
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://dbserver:5432/postgres
+      QUARKUS_HTTP_PORT: 8080
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+    #ports:
+    #  - "9092:8080" # host:contenedor
+    expose:
+      - 8080 # Exponer el puerto 8080 del contenedor a la red interna de Docker.
+    deploy:
+      replicas: 1
+    depends_on:
+      - dbserver
+      - consul
+    entrypoint: >
+      sh -c "
+      apt-get update && apt-get install -y curl bash &&
+      curl -o /usr/local/bin/wait-for-it https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh &&
+      chmod +x /usr/local/bin/wait-for-it &&
+      /usr/local/bin/wait-for-it dbserver:5432 -- java -jar /app/app.jar
+      "
 
   prometheus:
     image: prom/prometheus:latest
@@ -151,11 +170,11 @@ services:
 
 # Authors:
 # Acceder a la aplicación de autores: http://localhost:8080/app-authors/authors
-# Salud autores:                      http://localhost:8080/app-authors/q/health
+# Salud autores: http://localhost:8080/app-authors/q/health
 
 # Books:
 # Acceder a la aplicación de libros: http://localhost:8080/app-books/books
-# Salud libros:                      http://localhost:8080/app-books/q/health
+# Salud libros: http://localhost:8080/app-books/q/health
 
 # devui: http://localhost:8080/q/dev-ui/extensions
 
