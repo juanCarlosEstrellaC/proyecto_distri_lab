@@ -28,10 +28,7 @@ CMD ["java", "-jar", "app.jar"]
 #  2. Ejecutar el comando:
 #       docker build -t app-books . (el punto indica que se debe buscar el Dockerfile en el directorio actual)
 #
-#     O para subir a Docker Hub, usar:
-#       docker build -t jcestrella/app-books . (colocar el punto al final para indicar el contexto de construcción)
-#       docker build -t jcestrella/app-books:version_health .
+#     O para subir a Docker Hub, usar: (colocar el punto al final para indicar el contexto de construcción)
 #
-#  3. Para subir la imagen a Docker Hub, usar:
+#       docker build -t jcestrella/app-books .
 #       docker push jcestrella/app-books
-#       docker push jcestrella/app-books:version_health
