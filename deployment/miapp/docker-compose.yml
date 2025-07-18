@@ -176,6 +176,9 @@ services:
 # Acceder a la aplicación de libros: http://localhost:8080/app-books/books
 # Salud libros: http://localhost:8080/app-books/q/health
 
+# Customers:
+# Acceder a la aplicación de clientes: http://localhost:8080/app-customers/customers
+
 # devui: http://localhost:8080/q/dev-ui/extensions
 
 # Para prometheus, la URL es http://prometheus:9090
