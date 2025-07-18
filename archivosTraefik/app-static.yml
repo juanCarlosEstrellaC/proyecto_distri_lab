@@ -7,6 +7,7 @@ http:
       service: service-app-authors 
       middlewares:
       - strip-prefix-authors
+      - cors-middleware
 
     router-app-books:
       entryPoints:
@@ -15,6 +16,7 @@ http:
       service: service-app-books
       middlewares:
       - strip-prefix-books
+      - cors-middleware
 
     router-app-customers:
       entryPoints:
@@ -23,6 +25,7 @@ http:
       service: service-app-customers
       middlewares:
       - strip-prefix-customers
+      - cors-middleware
      
 
   services:
@@ -62,4 +65,25 @@ http:
     strip-prefix-customers:
       stripPrefix:
         prefixes:
-        - "/app-customers"  
+        - "/app-customers"
+
+    cors-middleware:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        accessControlAllowOriginList:
+          - "http://localhost:3001"
+        accessControlAllowHeaders:
+          - "accept"
+          - "authorization"
+          - "content-type"
+          - "x-requested-with"
+          - "access-control-allow-origin"
+        accessControlExposeHeaders:
+          - "*"
+        accessControlAllowCredentials: false
+        accessControlMaxAge: 86400  

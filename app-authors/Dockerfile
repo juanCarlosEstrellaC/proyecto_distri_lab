@@ -21,15 +21,7 @@ COPY build/quarkus-app/quarkus-run.jar app.jar
 CMD ["java", "-jar", "app.jar"]
 
 ############################ Comandos para construir la imagen Docker ##############################
-#  1. Navegar al directorio donde se encuentra este Dockerfile.
-#  2. Ejecutar el comando:
-#       docker build -t app-authors . (el punto indica que se debe buscar el Dockerfile en el directorio actual)
 #
-#     O para subir a Docker Hub, usar:
-#       docker build -t jcestrella/app-authors . (colocar el punto al final para indicar el contexto de construcción)
-#       docker build -t jcestrella/app-authors:version_health .
-#
-#  3. Para subir la imagen a Docker Hub, usar:
+#       docker build -t jcestrella/app-authors .
 #       docker push jcestrella/app-authors
-#       docker push jcestrella/app-authors:version_health
 #

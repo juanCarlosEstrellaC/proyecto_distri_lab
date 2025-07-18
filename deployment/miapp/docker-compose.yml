@@ -53,10 +53,14 @@ services:
       --providers.ConsulCatalog.exposedByDefault=false
       --providers.consulCatalog.refreshInterval=5s
       --providers.consulCatalog.endpoint.address=consul:8500
+      --providers.file.filename=/etc/traefik/app-static.yml
+      --providers.file.watch=true
       --entrypoints.metrics.address=:"8082"
       --entrypoints.http.address=:"80"
       --metrics.prometheus=true
       --metrics.prometheus.entryPoint=metrics
+    volumes:
+      - ../../archivosTraefik/app-static.yml:/etc/traefik/app-static.yml:ro
     ports:
       - "8888:8080" # Traefik dashboard
       - "8080:80"   # HTTP, host:contenedor
@@ -77,6 +81,17 @@ services:
       QUARKUS_HTTP_PORT: 8080
       CONSUL_HOST: consul
       CONSUL_PORT: 8500
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.authors.rule=PathPrefix(`/app-authors`)"
+      - "traefik.http.routers.authors.entrypoints=http"
+      - "traefik.http.routers.authors.middlewares=authors-stripprefix,cors-headers"
+      - "traefik.http.middlewares.authors-stripprefix.stripprefix.prefixes=/app-authors"
+      - "traefik.http.middlewares.cors-headers.headers.accessControlAllowOriginList=http://localhost:3001"
+      - "traefik.http.middlewares.cors-headers.headers.accessControlAllowMethods=GET,POST,PUT,DELETE,OPTIONS"
+      - "traefik.http.middlewares.cors-headers.headers.accessControlAllowHeaders=accept,authorization,content-type,x-requested-with"
+      - "traefik.http.middlewares.cors-headers.headers.accessControlMaxAge=86400"
+      - "traefik.http.services.authors.loadbalancer.server.port=8080"
     # Comento el mapeo ya que uso Traefik para usar el proxy inverso.
     # http://127.0.0.1:8080/app-authors/authors
     # ports:
@@ -84,7 +99,7 @@ services:
     expose:
       - 8080 # Exponer el puerto 8080 del contenedor a la red interna de Docker.
     deploy:
-      replicas: 2
+      replicas: 1
     depends_on:
       - dbserver
       - consul
@@ -108,6 +123,13 @@ services:
       CONSUL_HOST: consul
       CONSUL_PORT: 8500
       #AUTHORS_URL: http://authors3:8080
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.books.rule=PathPrefix(`/app-books`)"
+      - "traefik.http.routers.books.entrypoints=http"
+      - "traefik.http.routers.books.middlewares=books-stripprefix,cors-headers"
+      - "traefik.http.middlewares.books-stripprefix.stripprefix.prefixes=/app-books"
+      - "traefik.http.services.books.loadbalancer.server.port=8080"
     #ports:
     #  - "9091:8080" # host:contenedor
     expose:
@@ -121,6 +143,53 @@ services:
       chmod +x /usr/local/bin/wait-for-it &&
       /usr/local/bin/wait-for-it dbserver:5432 -- java -jar /app/app.jar
       "
+
+  customers:
+    image: jcestrella/app-customers:latest
+    environment:
+      QUARKUS_DATASOURCE_USERNAME: postgres
+      QUARKUS_DATASOURCE_PASSWORD: labcom,2015
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://dbserver:5432/postgres
+      QUARKUS_HTTP_PORT: 8080
+      CONSUL_HOST: consul
+      CONSUL_PORT: 8500
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.customers.rule=PathPrefix(`/app-customers`)"
+      - "traefik.http.routers.customers.entrypoints=http"
+      - "traefik.http.routers.customers.middlewares=customers-stripprefix,cors-headers"
+      - "traefik.http.middlewares.customers-stripprefix.stripprefix.prefixes=/app-customers"
+      - "traefik.http.services.customers.loadbalancer.server.port=8080"
+    expose:
+      - 8080 # Exponer el puerto 8080 del contenedor a la red interna de Docker.
+    depends_on:
+      - dbserver
+      - consul
+    entrypoint: >
+      sh -c "
+      curl -o /usr/local/bin/wait-for-it https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh &&
+      chmod +x /usr/local/bin/wait-for-it &&
+      /usr/local/bin/wait-for-it dbserver:5432 -- java -jar /app/app.jar
+      "
+    
+
+  front:
+    image: jcestrella/app-front:latest
+    environment:
+      # URLs de las APIs backend (a través de Traefik)
+      VITE_AUTHORS_API_URL: http://localhost:8080/app-authors
+      VITE_BOOKS_API_URL: http://localhost:8080/app-books
+      VITE_CUSTOMERS_API_URL: http://localhost:8080/app-customers
+      # Configuración del frontend
+      NODE_ENV: production
+    ports:
+      - "3001:80"   # Frontend accesible en http://localhost:3001
+    expose:
+      - 80 # Exponer el puerto 80 del contenedor a la red interna de Docker.
+    depends_on:
+      - authors
+      - books
+      - customers
 
 
   prometheus:
@@ -136,7 +205,7 @@ services:
   grafana:
     image: grafana/grafana-oss:latest
     ports:
-      - "3000:3000"
+      - "4000:3000"
     expose:
       - 3000
     environment:
@@ -144,10 +213,13 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
 
 
-# Acceder a Grafana: http://localhost:3000
+# Acceder a Grafana: http://localhost:4000
 # Acceder a Prometheus: http://localhost:9090
 # Acceder al dashboard de Traefik: http://localhost:8888
 # Acceder a Consul: http://localhost:8500
+
+# Frontend:
+# Acceder a la aplicación frontend: http://localhost:3001
 
 # Authors:
 # Acceder a la aplicación de autores: http://localhost:8080/app-authors/authors
