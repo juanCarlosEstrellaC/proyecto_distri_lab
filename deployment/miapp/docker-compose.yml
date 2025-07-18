@@ -142,6 +142,15 @@ services:
       /usr/local/bin/wait-for-it dbserver:5432 -- java -jar /app/app.jar
       "
 
+  front:
+    image: jcestrella/app-front:latest
+    ports:
+      - "4000:80"  # Nginx corre en puerto 80 dentro del contenedor, expuesto en 4000
+    expose:
+      - 80
+    depends_on:
+      - proxy  # Depende de Traefik para poder consumir las APIs
+
   prometheus:
     image: prom/prometheus:latest
     volumes:
@@ -178,6 +187,9 @@ services:
 
 # Customers:
 # Acceder a la aplicación de clientes: http://localhost:8080/app-customers/customers
+
+# Frontend:
+# Acceder a la aplicación front: http://localhost:4000
 
 # devui: http://localhost:8080/q/dev-ui/extensions
 
