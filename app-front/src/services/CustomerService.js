@@ -40,6 +40,7 @@ class CustomerService {
   // Obtener todos los customers
   async getAllCustomers() {
     try {
+      console.log('Obteniendo customers desde el endpoint REST...')
       const response = await api.get('/customers')
       return response.data
     } catch (error) {
@@ -111,11 +112,24 @@ class CustomerService {
   handleError(error) {
     if (error.response) {
       // El servidor respondió con un código de estado que no está en el rango 2xx
+      const status = error.response.status
+      
+      // Manejo específico para errores de eliminación
+      if (status === 500 && error.config?.method === 'delete') {
+        return new Error('No se puede eliminar este customer porque tiene órdenes de compra asociadas.')
+      }
+      
+      // Manejo específico para errores de creación por duplicados
+      if (status === 500 && error.config?.method === 'post' && 
+          error.response.data?.includes && error.response.data.includes('duplicate key')) {
+        return new Error('No se puede crear el customer porque ya existe un registro con esos datos.')
+      }
+      
       const message = error.response.data?.message || `Error del servidor: ${error.response.status}`
       return new Error(message)
     } else if (error.request) {
       // La petición fue hecha pero no se recibió respuesta
-      return new Error('No se pudo conectar con el servidor de customers. Verifique que esté ejecutándose en http://localhost:7070')
+      return new Error('No se pudo conectar con el servidor de customers. Verifique que el servicio esté ejecutándose correctamente.')
     } else {
       // Algo sucedió al configurar la petición
       return new Error(`Error de configuración: ${error.message}`)

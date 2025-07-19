@@ -23,6 +23,6 @@ CMD ["java", "-jar", "app.jar"]
 ############################ Comandos para construir la imagen Docker ##############################
 #       docker build -t jcestrella/app-customers .
 #       docker push jcestrella/app-customers
-#       docker build -t jcestrella/app-customers:version_health . && docker push jcestrella/app-customers
+#       docker build -t jcestrella/app-customers . && docker push jcestrella/app-customers
 
 

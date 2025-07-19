@@ -7,4 +7,5 @@ public class CustomerDto {
     private Integer id;
     private String name;
     private String email;
+    private Integer version;
 }

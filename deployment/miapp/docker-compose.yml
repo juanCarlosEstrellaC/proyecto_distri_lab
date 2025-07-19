@@ -117,7 +117,7 @@ services:
       "
 
   customers:
-    image: jcestrella/app-customers:latest
+    image: jcestrella/app-customers:v1.0.0
     environment:
       QUARKUS_DATASOURCE_USERNAME: postgres
       QUARKUS_DATASOURCE_PASSWORD: labcom,2015
