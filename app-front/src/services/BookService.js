@@ -1,7 +1,7 @@
 import axios from 'axios'
 
-// URL usando Traefik como proxy desde el navegador
-const API_BASE_URL = 'http://localhost:8080/app-books'
+// URL relativa para evitar problemas de CORS
+const API_BASE_URL = '/api/app-books'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
