@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-// URL directa a Traefik
+// URL usando Traefik como proxy desde el navegador (para órdenes en customers)
 const API_BASE_URL = 'http://localhost:8080/app-customers'
 
 const api = axios.create({
